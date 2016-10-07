@@ -14,7 +14,7 @@ class Scope {
 
 
 public class HelloWalker extends HelloBaseListener {
-  Stack<Scope> scopes = new Stack();
+  Stack<Scope> scopes = new Stack<Scope>();
 
   public void enterR(HelloParser.RContext ctx ) {
     System.out.println("Entering R : ");// + ctx.IDX().getText() );

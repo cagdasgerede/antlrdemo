@@ -1,23 +1,35 @@
 ANTLR4=java -jar /usr/local/lib/antlr-4.5.3-complete.jar
-GRUN=java -cp "$$CLASSPATH:./output" org.antlr.v4.gui.TestRig 
+GRUN=java -cp "$$CLASSPATH:./output" org.antlr.v4.gui.TestRig
+TEST_FILE=test.txt
+START_RULE=r
+CUSTOM_RUNNER=Hello
+GRAMMAR=Hello
 
-all: Hello.class
-
-HelloParser.java: grammar/Hello.g4
+antlrjavafiles: grammar/$(GRAMMAR).g4
 	mkdir -p antlrgenerated
-	cp grammar/Hello.g4 antlrgenerated/
-	$(ANTLR4) antlrgenerated/Hello.g4
+	cp grammar/$(GRAMMAR).g4 antlrgenerated/
+	$(ANTLR4) antlrgenerated/$(GRAMMAR).g4
 
-Hello.class: HelloParser.java src/Hello.java src/HelloWalker.java
+antlrjavac: antlrjavafiles
 	mkdir -p output
-	javac src/Hello*.java -sourcepath antlrgenerated/ -d output/
+	javac -Xlint antlrgenerated/*.java -d output/
+	
+testriggui: antlrjavac
+	$(GRUN) $(GRAMMAR) $(START_RULE) -gui $(TEST_FILE)
 
-test: Hello.class
-	java -cp "$$CLASSPATH:./output" Hello test.txt
+testrigtokens: antlrjavac
+	$(GRUN) $(GRAMMAR) $(START_RULE) -tokens $(TEST_FILE)
+
+
+all: $(CUSTOM_RUNNER).class
+
+$(CUSTOM_RUNNER).class: antlrjavafiles src/$(CUSTOM_RUNNER).java
+	mkdir -p output
+	javac -Xlint src/$(GRAMMAR)*.java -sourcepath antlrgenerated/ -d output/
+
+test: $(CUSTOM_RUNNER).class
+	java -cp "$$CLASSPATH:./output" $(CUSTOM_RUNNER) $(TEST_FILE)
 
 clean:
 	if [ -d "output" ]; then rm -r output; fi
 	if [ -d "antlrgenerated" ]; then rm -r antlrgenerated; fi
-
-testgui: Hello.class
-	$(GRUN) Hello r -gui test.txt 
